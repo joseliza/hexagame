@@ -1,0 +1,169 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #04050e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: monospace;
+}
+
+#game-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+#game {
+  display: block;
+  border: 1px solid #1a1c38;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+/* ─── Room panel (live scores) ─────────────────────────── */
+#room-panel {
+  background: #06071a;
+  border: 1px solid #1e2040;
+  border-radius: 8px;
+  padding: 10px 8px;
+  width: 158px;
+  font-size: 0.78rem;
+  color: #f0f0fa;
+  align-self: flex-start;
+  margin-top: 0;
+}
+
+#room-panel-header {
+  border-bottom: 1px solid #1e2040;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+}
+
+#rp-label { color: #505070; font-size: 0.7rem; display: block; }
+#rp-code  { color: #00c8ff; font-weight: bold; font-size: 1rem; letter-spacing: 2px; display: block; }
+
+#rp-nick-row {
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  color: #808090;
+}
+#rp-nick { color: #ffd700; }
+
+.score-entry {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 2px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  min-height: 22px;
+}
+.score-entry.me { background: #0d0f28; }
+
+.score-rank { width: 18px; font-size: 0.7rem; text-align: center; }
+.rank-gold   { color: #FFD700; }
+.rank-silver { color: #C0C0C0; }
+.rank-bronze { color: #CD7F32; }
+.rank-other  { color: #505070; }
+
+.score-nick {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+.score-pts  { color: #00c8ff; font-weight: bold; font-size: 0.75rem; }
+.score-state-go { color: #606070; font-size: 0.65rem; }
+
+#btn-podium {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 4px;
+  background: #0e0f24;
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  font-family: monospace;
+  font-size: 0.73rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#btn-podium:hover { background: #1e1f34; }
+
+/* ─── Nick/code modal ──────────────────────────────────── */
+.hidden { display: none !important; }
+
+#nick-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+
+.modal-box {
+  background: #0a0c20;
+  border: 2px solid #00c8ff;
+  border-radius: 12px;
+  padding: 24px 28px 20px;
+  width: 320px;
+  color: #f0f0fa;
+  font-family: monospace;
+}
+
+.modal-box h3 {
+  color: #00e650;
+  margin-bottom: 14px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.modal-box label {
+  display: block;
+  color: #8888aa;
+  font-size: 0.8rem;
+  margin: 10px 0 4px;
+}
+.modal-box .hint { color: #404060; }
+
+.modal-box input {
+  width: 100%;
+  background: #060820;
+  border: 1px solid #303060;
+  color: #f0f0fa;
+  font-family: monospace;
+  font-size: 1rem;
+  padding: 7px 10px;
+  border-radius: 6px;
+  outline: none;
+}
+.modal-box input:focus { border-color: #00c8ff; }
+
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.modal-btns button {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+#modal-ok     { background: #00e650; color: #020a02; font-weight: bold; }
+#modal-cancel { background: #1a1c30; color: #606080; border: 1px solid #303050; }
+
+#modal-error {
+  color: #ff5050;
+  font-size: 0.82rem;
+  margin-top: 8px;
+  text-align: center;
+}

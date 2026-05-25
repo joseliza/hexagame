@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HexInvaders — Documentación técnica</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #04050e;
+      color: #d0d0e8;
+      font-family: monospace;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .wrap { max-width: 820px; margin: 0 auto; }
+
+    h1 { color: #00e650; font-size: 2rem; margin-bottom: 6px; }
+    h2 { color: #00c8ff; font-size: 1.2rem; margin: 36px 0 12px; border-bottom: 1px solid #1e2040; padding-bottom: 6px; }
+    h3 { color: #ffd700; font-size: 1rem; margin: 20px 0 6px; }
+
+    p  { margin-bottom: 10px; color: #a0a0c0; }
+    a  { color: #00c8ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .subtitle { color: #606080; margin-bottom: 32px; font-size: 0.9rem; }
+
+    .repo-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #08091c;
+      border: 1px solid #00c8ff;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 32px;
+    }
+    .repo-banner svg { flex-shrink: 0; }
+    .repo-banner a {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #00c8ff;
+    }
+    .repo-banner span { color: #606080; font-size: 0.85rem; }
+
+    .badge {
+      display: inline-block;
+      background: #0a0c20;
+      border: 1px solid #1e2040;
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: 0.82rem;
+      color: #8888aa;
+      margin: 2px 4px 2px 0;
+    }
+
+    .card {
+      background: #08091c;
+      border: 1px solid #1e2040;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    th { text-align: left; color: #505070; font-weight: normal; font-size: 0.82rem;
+         padding: 4px 12px 4px 0; border-bottom: 1px solid #1a1c30; }
+    td { padding: 6px 12px 6px 0; border-bottom: 1px solid #0e0f24; vertical-align: top; }
+    td:first-child { color: #ffd700; white-space: nowrap; width: 160px; }
+    td:last-child  { color: #c0c0d8; }
+
+    pre {
+      background: #060820;
+      border: 1px solid #1e2040;
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin: 10px 0 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    code { color: #00e650; }
+    pre .comment { color: #404060; }
+    pre .cmd     { color: #00c8ff; }
+
+    .license-box {
+      background: #08091c;
+      border: 1px solid #ffd700;
+      border-radius: 10px;
+      padding: 18px 24px;
+      margin-top: 8px;
+    }
+    .license-box p { color: #c0c0a0; margin-bottom: 6px; }
+
+    footer {
+      margin-top: 60px;
+      border-top: 1px solid #1a1c30;
+      padding-top: 20px;
+      color: #404060;
+      font-size: 0.82rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🎮 HexInvaders</h1>
+  <p class="subtitle">Documentación técnica · Despliegue · Licencia</p>
+
+  <!-- ── Repositorio ── -->
+  <div class="repo-banner">
+    <svg height="24" width="24" viewBox="0 0 16 16" fill="#00c8ff">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+               0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+               -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+               .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+               -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+               .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+               .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+               0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    <div>
+      <a href="https://github.com/joseliza/hexagame" target="_blank">github.com/joseliza/hexagame</a><br>
+      <span>Código fuente público · CC BY-SA 4.0</span>
+    </div>
+  </div>
+
+  <!-- ── Descripción ── -->
+  <h2>¿Qué es?</h2>
+  <div class="card">
+    <p>Juego arcade educativo para aprender a convertir números hexadecimales a binario.
+       Los marcianos caen con su código hexadecimal; el jugador compone los nibbles
+       binarios con las teclas QWER/UIOP y dispara cuando los tiene correctos.</p>
+    <p>Incluye modo libre (dificultad progresiva), niveles fijos y
+       <strong>modo sala multijugador en tiempo real</strong> donde varios alumnos
+       compiten simultáneamente viendo el ranking en vivo.</p>
+    <p><strong>Autor:</strong> José Manuel Lizana Jiménez —
+       Departamento de Informática, IES Ciudad Jardín</p>
+  </div>
+
+  <!-- ── Tecnologías ── -->
+  <h2>Tecnologías utilizadas</h2>
+
+  <h3>Backend</h3>
+  <div class="card">
+    <table>
+      <tr><th>Componente</th><th>Versión</th><th>Uso</th></tr>
+      <tr><td>Python</td><td>3.12</td><td>Lenguaje del servidor</td></tr>
+      <tr><td>Flask</td><td>3.1</td><td>Framework web, rutas HTTP y plantillas</td></tr>
+      <tr><td>Flask-SocketIO</td><td>5.3.6</td><td>WebSockets para el multijugador en tiempo real</td></tr>
+      <tr><td>eventlet</td><td>0.37</td><td>Servidor asíncrono compatible con WebSockets</td></tr>
+      <tr><td>Gunicorn</td><td>23</td><td>Servidor WSGI de producción (worker eventlet)</td></tr>
+    </table>
+  </div>
+
+  <h3>Frontend</h3>
+  <div class="card">
+    <table>
+      <tr><th>Tecnología</th><th>Uso</th></tr>
+      <tr><td>JavaScript ES6+</td><td>Lógica del juego, gestión de estados, red</td></tr>
+      <tr><td>HTML5 Canvas API</td><td>Renderizado del juego a 60 fps</td></tr>
+      <tr><td>Web Audio API</td><td>Sonidos arcade sintéticos sin ficheros externos</td></tr>
+      <tr><td>Socket.IO client 4.7</td><td>Comunicación en tiempo real con el servidor</td></tr>
+      <tr><td>CSS3</td><td>Interfaz del modal de sala y panel de puntuaciones</td></tr>
+    </table>
+  </div>
+
+  <h3>Infraestructura</h3>
+  <div class="card">
+    <table>
+      <tr><th>Componente</th><th>Uso</th></tr>
+      <tr><td>Docker</td><td>Contenedor de la aplicación</td></tr>
+      <tr><td>Docker Compose</td><td>Orquestación del servicio</td></tr>
+    </table>
+  </div>
+
+  <!-- ── Estructura ── -->
+  <h2>Estructura del proyecto</h2>
+  <pre><code>hexagame/
+├── app.py               <span class="comment"># Servidor Flask + lógica de salas SocketIO</span>
+├── requirements.txt     <span class="comment"># Dependencias Python</span>
+├── Dockerfile
+├── docker-compose.yml
+├── static/
+│   ├── game.js          <span class="comment"># Todo el juego (clases Game, Alien, Panel, Cannon…)</span>
+│   ├── style.css        <span class="comment"># Estilos del modal y panel lateral</span>
+│   └── nave.png         <span class="comment"># Sprite de la nave del jugador</span>
+└── templates/
+    ├── index.html       <span class="comment"># Página principal del juego</span>
+    └── docs.html        <span class="comment"># Esta página</span></code></pre>
+
+  <!-- ── Despliegue con Docker ── -->
+  <h2>Despliegue con Docker (recomendado)</h2>
+
+  <h3>Requisitos</h3>
+  <p>
+    <span class="badge">Docker ≥ 24</span>
+    <span class="badge">Docker Compose v2</span>
+    <span class="badge">Git</span>
+  </p>
+
+  <h3>Pasos</h3>
+  <pre><span class="comment"># 1. Descarga el proyecto desde GitHub</span>
+<span class="cmd">git clone https://github.com/joseliza/hexagame.git
+cd hexagame</span>
+
+<span class="comment"># 2. Construye la imagen y arranca el contenedor</span>
+<span class="cmd">docker compose up --build -d</span>
+
+<span class="comment"># 3. Abre el juego en el navegador</span>
+<span class="comment">#    http://localhost:5000</span></pre>
+
+  <p>Para detenerlo:</p>
+  <pre><span class="cmd">docker compose down</span></pre>
+
+  <p>Para actualizar cuando haya cambios en el repositorio:</p>
+  <pre><span class="cmd">git pull
+docker compose down &amp;&amp; docker compose up --build -d</span></pre>
+
+  <!-- ── Despliegue manual ── -->
+  <h2>Despliegue manual (sin Docker)</h2>
+
+  <h3>Requisitos</h3>
+  <p>
+    <span class="badge">Python ≥ 3.10</span>
+    <span class="badge">pip</span>
+    <span class="badge">Git</span>
+  </p>
+
+  <h3>Pasos</h3>
+  <pre><span class="comment"># 1. Descarga el proyecto desde GitHub</span>
+<span class="cmd">git clone https://github.com/joseliza/hexagame.git
+cd hexagame</span>
+
+<span class="comment"># 2. Crea un entorno virtual e instala dependencias</span>
+<span class="cmd">python -m venv .venv
+source .venv/bin/activate        <span class="comment"># En Windows: .venv\Scripts\activate</span>
+pip install -r requirements.txt</span>
+
+<span class="comment"># 3. Arranca el servidor</span>
+<span class="cmd">python app.py</span>
+
+<span class="comment"># 4. Abre el juego en el navegador</span>
+<span class="comment">#    http://localhost:5000</span></pre>
+
+  <p>Para producción con Gunicorn:</p>
+  <pre><span class="cmd">gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:5000 app:app</span></pre>
+
+  <!-- ── Multijugador ── -->
+  <h2>Cómo funciona el modo sala</h2>
+  <div class="card">
+    <p><strong>1.</strong> Un jugador pulsa <em>Sala multijugador</em>, escribe su nick y deja el código vacío → se crea una sala con un código de 4 caracteres.</p>
+    <p><strong>2.</strong> El resto de jugadores introducen el mismo código para unirse.</p>
+    <p><strong>3.</strong> Cada jugador pulsa <em>Jugar</em> de forma independiente. Las puntuaciones se sincronizan en tiempo real en el panel lateral.</p>
+    <p><strong>4.</strong> El anfitrión (quien creó la sala) puede mostrar el podio final con el botón <em>🏆 Podio</em>.</p>
+    <p>Las salas se almacenan en memoria; al reiniciar el servidor se eliminan.</p>
+  </div>
+
+  <!-- ── Licencia ── -->
+  <h2>Licencia</h2>
+  <div class="license-box">
+    <p><strong style="color:#ffd700">Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)</strong></p>
+    <p>Eres libre de usar, copiar, modificar y redistribuir este proyecto,
+       incluso con fines educativos, siempre que:</p>
+    <p>• Atribuyas la autoría a <strong>José Manuel Lizana Jiménez</strong>.</p>
+    <p>• Distribuyas cualquier obra derivada bajo la misma licencia CC BY-SA 4.0.</p>
+    <p><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank">→ Texto completo de la licencia</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/joseliza/hexagame" target="_blank">→ Repositorio en GitHub</a></p>
+  </div>
+
+  <footer>
+    HexInvaders · José Manuel Lizana Jiménez · Departamento de Informática · IES Ciudad Jardín · 2025 ·
+    <a href="https://github.com/joseliza/hexagame" target="_blank">GitHub</a> ·
+    <a href="/">Volver al juego</a>
+  </footer>
+
+</div>
+</body>
+</html>

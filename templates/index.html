@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HexInvaders — Aprende Hexadecimal</title>
+  <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game" width="900" height="660"></canvas>
+    <div id="room-panel" class="hidden">
+      <div id="room-panel-header">
+        <span id="rp-label">SALA</span>
+        <span id="rp-code"></span>
+      </div>
+      <div id="rp-nick-row"><span id="rp-nick"></span></div>
+      <div id="rp-scores"></div>
+      <button id="btn-podium">🏆 Podio</button>
+    </div>
+  </div>
+
+  <!-- Modal nick / código de sala -->
+  <div id="nick-modal" class="hidden">
+    <div class="modal-box">
+      <h3>Sala Multijugador</h3>
+      <label>Tu nick <span class="hint">(máx. 12 caracteres)</span></label>
+      <input id="nick-input" maxlength="12" autocomplete="off" spellcheck="false">
+      <label>Código de sala <span class="hint">(vacío = crear nueva)</span></label>
+      <input id="code-input" maxlength="4" autocomplete="off" spellcheck="false" style="text-transform:uppercase">
+      <div class="modal-btns">
+        <button id="modal-ok">Entrar</button>
+        <button id="modal-cancel">Cancelar</button>
+      </div>
+      <p id="modal-error" class="hidden"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/static/game.js?v=9"></script>
+</body>
+</html>
