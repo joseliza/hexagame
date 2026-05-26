@@ -79,6 +79,7 @@ def docs():
 
 @socketio.on('create_room')
 def on_create_room(data):
+    if not isinstance(data, dict): return
     if len(rooms) >= MAX_ROOMS:
         emit('room_error', {'msg': 'Servidor lleno. Inténtalo más tarde.'})
         return
@@ -99,6 +100,7 @@ def on_create_room(data):
 
 @socketio.on('join_room_req')
 def on_join_room(data):
+    if not isinstance(data, dict): return
     if not _check_rate(_real_ip(), _room_joins, _JOIN_MAX):
         emit('room_error', {'msg': 'Demasiados intentos. Espera un momento.'})
         return
@@ -126,6 +128,7 @@ def on_join_room(data):
 
 @socketio.on('start_game')
 def on_start_game(data):
+    if not isinstance(data, dict): return
     code = data.get('code')
     if code not in rooms:
         return
@@ -135,6 +138,7 @@ def on_start_game(data):
 
 @socketio.on('score_update')
 def on_score_update(data):
+    if not isinstance(data, dict): return
     code, nick = data.get('code'), data.get('nick')
     if code not in rooms or nick not in rooms[code]['players']:
         return
@@ -151,6 +155,7 @@ def on_score_update(data):
 
 @socketio.on('player_gameover')
 def on_player_gameover(data):
+    if not isinstance(data, dict): return
     code, nick = data.get('code'), data.get('nick')
     if code not in rooms or nick not in rooms[code]['players']:
         return
@@ -164,6 +169,7 @@ def on_player_gameover(data):
 
 @socketio.on('show_podium')
 def on_show_podium(data):
+    if not isinstance(data, dict): return
     code = data.get('code')
     if code not in rooms:
         return
@@ -178,6 +184,7 @@ def on_show_podium(data):
 
 @socketio.on('leave_room_req')
 def on_leave_room(data):
+    if not isinstance(data, dict): return
     code, nick = data.get('code'), data.get('nick')
     if code not in rooms:
         return

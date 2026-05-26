@@ -548,6 +548,10 @@
               <td>Diccionario de IPs sin poda</td>
               <td>El registro de IPs para el rate limiting acumulaba entradas indefinidamente aunque sus timestamps hubieran expirado. La función <code>_check_rate</code> elimina ahora las entradas vacías en cada llamada, manteniendo el uso de memoria acotado.</td>
             </tr>
+            <tr>
+              <td>Datos de eventos SocketIO sin validación de tipo</td>
+              <td>Todos los handlers de SocketIO asumen que el payload del evento es un diccionario y llaman a <code>.get()</code> directamente. Si un cliente enviaba un tipo distinto (por ejemplo <code>null</code> o un entero), se producía un <code>AttributeError</code> no controlado que podía provocar errores en el servidor. Cada handler incluye ahora una guarda <code>if not isinstance(data, dict): return</code> como primera instrucción.</td>
+            </tr>
           </tbody>
         </table>
       </div>
