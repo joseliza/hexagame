@@ -15,20 +15,39 @@ socketio = SocketIO(app, cors_allowed_origins='https://hexagame.iesciudadjardin.
 rooms = {}  # code -> {players, state, creator}
 
 MAX_ROOMS        = 50   # salas simultáneas máximas
+MAX_PLAYERS_ROOM = 30   # jugadores máximos por sala
 _RATE_WINDOW     = 60   # segundos de ventana para rate limiting
 _RATE_MAX        = 5    # máximo de salas nuevas por IP en esa ventana
+_JOIN_MAX        = 15   # máximo de intentos de unirse por IP en esa ventana
 _SCORE_INTERVAL  = 1.0  # segundos mínimos entre score_update por jugador
-_room_creation   = {}   # ip -> [timestamps]
+_room_creation   = {}   # ip -> [timestamps] para create_room
+_room_joins      = {}   # ip -> [timestamps] para join_room_req
 
 
-def _check_rate(ip):
-    """Devuelve True si la IP puede crear una sala más; actualiza el registro."""
+def _real_ip():
+    """Devuelve la IP real del cliente.
+    Toma la última entrada de X-Forwarded-For (añadida por el proxy, no falsificable)
+    y cae a REMOTE_ADDR si no hay proxy.
+    """
+    xff = request.environ.get('HTTP_X_FORWARDED_FOR', '')
+    if xff:
+        return xff.split(',')[-1].strip()
+    return request.environ.get('REMOTE_ADDR', '')
+
+
+def _check_rate(ip, store, max_count):
+    """Devuelve True si la IP no supera max_count eventos en _RATE_WINDOW segundos.
+    Actualiza store y poda entradas expiradas.
+    """
     now = time.time()
-    recent = [t for t in _room_creation.get(ip, []) if now - t < _RATE_WINDOW]
-    if len(recent) >= _RATE_MAX:
+    recent = [t for t in store.get(ip, []) if now - t < _RATE_WINDOW]
+    if len(recent) >= max_count:
+        store[ip] = recent
         return False
     recent.append(now)
-    _room_creation[ip] = recent
+    store[ip] = recent
+    for old_ip in [k for k, v in store.items() if not v]:
+        del store[old_ip]
     return True
 
 
@@ -63,8 +82,7 @@ def on_create_room(data):
     if len(rooms) >= MAX_ROOMS:
         emit('room_error', {'msg': 'Servidor lleno. Inténtalo más tarde.'})
         return
-    ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', ''))
-    if not _check_rate(ip):
+    if not _check_rate(_real_ip(), _room_creation, _RATE_MAX):
         emit('room_error', {'msg': 'Demasiadas salas creadas. Espera un momento.'})
         return
     nick = (data.get('nick') or 'Anónimo')[:12].strip()
@@ -81,12 +99,18 @@ def on_create_room(data):
 
 @socketio.on('join_room_req')
 def on_join_room(data):
+    if not _check_rate(_real_ip(), _room_joins, _JOIN_MAX):
+        emit('room_error', {'msg': 'Demasiados intentos. Espera un momento.'})
+        return
     nick = (data.get('nick') or 'Anónimo')[:12].strip()
     code = (data.get('code') or '').upper().strip()
     if code not in rooms:
         emit('room_error', {'msg': 'Sala no encontrada. Comprueba el código.'})
         return
     room = rooms[code]
+    if len(room['players']) >= MAX_PLAYERS_ROOM:
+        emit('room_error', {'msg': 'La sala está llena.'})
+        return
     base = nick
     suffix = 1
     while nick in room['players']:

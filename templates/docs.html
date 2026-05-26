@@ -509,37 +509,61 @@
     <!-- ── Seguridad ── -->
     <section id="seguridad">
       <h2>Seguridad</h2>
+      <p>A continuación se describen los problemas identificados en el análisis de seguridad y las soluciones adoptadas.</p>
+
+      <h3>Servidor</h3>
       <div class="card">
         <table>
-          <thead><tr><th>Medida</th><th>Descripción</th></tr></thead>
+          <thead><tr><th>Problema</th><th>Solución</th></tr></thead>
           <tbody>
             <tr>
-              <td>SECRET_KEY por entorno</td>
-              <td>La clave de sesión de Flask se inyecta como variable de entorno; no está en el código fuente ni en el repositorio.</td>
+              <td>SECRET_KEY expuesta en el código</td>
+              <td>La clave de sesión de Flask estaba hardcodeada en <code>app.py</code> y visible en el repositorio público. Ahora se carga desde la variable de entorno <code>SECRET_KEY</code> inyectada por Docker Compose. Si no existe, Flask genera una aleatoria en memoria.</td>
             </tr>
             <tr>
-              <td>Autorización server-side del podio</td>
-              <td>El servidor verifica que el socket que solicita mostrar el podio corresponde al creador de la sala. No basta con ocultar el botón en el cliente.</td>
+              <td>Autorización del podio solo en el cliente</td>
+              <td>El botón <em>🏆 Podio</em> estaba oculto para los no creadores, pero cualquier alumno podía emitir el evento <code>show_podium</code> desde la consola del navegador e interrumpir la partida de todos. El servidor ahora verifica que el <code>sid</code> del emisor coincide con el del creador de la sala antes de procesar la petición.</td>
             </tr>
             <tr>
-              <td>Rate limiting en creación de salas</td>
-              <td>Máximo de 50 salas simultáneas en el servidor y 5 salas nuevas por IP en un intervalo de 60 segundos.</td>
+              <td>CORS abierto a cualquier origen</td>
+              <td>Flask-SocketIO aceptaba conexiones WebSocket desde cualquier dominio (<code>*</code>), permitiendo que una web externa se conectase al servidor. Las conexiones están ahora restringidas a <code>https://hexagame.iesciudadjardin.es</code>.</td>
             </tr>
             <tr>
-              <td>Throttle de actualizaciones de puntuación</td>
-              <td>Se ignoran eventos <code>score_update</code> que lleguen con menos de 1 segundo de diferencia, evitando floods desde la consola del navegador.</td>
+              <td>Sin límite de salas ni rate limiting</td>
+              <td>Un cliente podía crear miles de salas en bucle agotando la memoria del servidor. Se aplican tres controles: máximo de 50 salas activas simultáneas, máximo de 5 salas nuevas por IP en 60 segundos, y máximo de 15 intentos de unirse a sala por IP en 60 segundos.</td>
             </tr>
             <tr>
-              <td>CORS restringido</td>
-              <td>Las conexiones WebSocket solo se aceptan desde <code>https://hexagame.iesciudadjardin.es</code>.</td>
+              <td>Flood de actualizaciones de puntuación</td>
+              <td>El evento <code>score_update</code> podía enviarse sin límite desde la consola, saturando el servidor con mensajes WebSocket. Se ignoran los eventos que lleguen con menos de 1 segundo de diferencia respecto al anterior del mismo jugador.</td>
             </tr>
             <tr>
-              <td>Proceso sin privilegios</td>
-              <td>El contenedor Docker ejecuta Gunicorn como usuario <code>appuser</code> (sin privilegios de root), reduciendo la superficie de ataque en el host.</td>
+              <td>IP real falsificable via X-Forwarded-For</td>
+              <td>Un cliente podía añadir su propia cabecera <code>X-Forwarded-For</code> con una IP falsa para eludir el rate limiting. Nginx Proxy Manager añade la IP real al <em>final</em> de esa cabecera. El servidor toma ahora únicamente la última entrada, que es la que el proxy añadió y no puede ser manipulada por el cliente.</td>
             </tr>
             <tr>
-              <td>TLS en el perímetro</td>
-              <td>Nginx Proxy Manager termina HTTPS antes de redirigir el tráfico al contenedor. El tramo interno es HTTP plano sobre red local.</td>
+              <td>Sin límite de jugadores por sala</td>
+              <td>Una sala podía acumular un número ilimitado de conexiones. El límite es ahora de 30 jugadores por sala, suficiente para una clase completa.</td>
+            </tr>
+            <tr>
+              <td>Diccionario de IPs sin poda</td>
+              <td>El registro de IPs para el rate limiting acumulaba entradas indefinidamente aunque sus timestamps hubieran expirado. La función <code>_check_rate</code> elimina ahora las entradas vacías en cada llamada, manteniendo el uso de memoria acotado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Infraestructura</h3>
+      <div class="card">
+        <table>
+          <thead><tr><th>Problema</th><th>Solución</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Proceso del contenedor ejecutándose como root</td>
+              <td>Si una vulnerabilidad en Flask o sus dependencias permitiese ejecutar comandos arbitrarios, el atacante obtendría privilegios de superusuario dentro del contenedor, aumentando el riesgo de escape al host (relevante porque el servidor comparte máquina con otras aplicaciones). El Dockerfile crea ahora el usuario <code>appuser</code> sin privilegios y Gunicorn arranca con ese usuario.</td>
+            </tr>
+            <tr>
+              <td>Tráfico HTTP en claro</td>
+              <td>El contenedor no gestiona TLS directamente; Nginx Proxy Manager termina HTTPS en el perímetro y reenvía el tráfico al contenedor por la red local del host. El tramo externo (alumno ↔ proxy) viaja cifrado.</td>
             </tr>
           </tbody>
         </table>
