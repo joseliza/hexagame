@@ -307,6 +307,8 @@
     <a href="#manual">Sin Docker</a>
     <div class="nav-section">Multijugador</div>
     <a href="#sala">Modo sala</a>
+    <div class="nav-section">Seguridad</div>
+    <a href="#seguridad">Medidas aplicadas</a>
     <div class="nav-section">Legal</div>
     <a href="#licencia">Licencia</a>
   </nav>
@@ -394,8 +396,9 @@
         <table>
           <thead><tr><th>Componente</th><th>Uso</th></tr></thead>
           <tbody>
-            <tr><td>Docker</td><td>Contenedor de la aplicación</td></tr>
-            <tr><td>Docker Compose</td><td>Orquestación del servicio</td></tr>
+            <tr><td>Docker</td><td>Contenedor de la aplicación (proceso sin privilegios)</td></tr>
+            <tr><td>Docker Compose</td><td>Orquestación del servicio e inyección de variables de entorno</td></tr>
+            <tr><td>Nginx Proxy Manager</td><td>Proxy inverso con terminación TLS (HTTPS)</td></tr>
           </tbody>
         </table>
       </div>
@@ -408,7 +411,8 @@
 ├── app.py               <span class="c"># Servidor Flask + lógica de salas SocketIO</span>
 ├── requirements.txt     <span class="c"># Dependencias Python</span>
 ├── Dockerfile
-├── docker-compose.yml
+├── .dockerignore
+├── docker-compose.yml   <span class="c"># Incluye la variable de entorno SECRET_KEY</span>
 ├── static/
 │   ├── game.js          <span class="c"># Juego completo (Game, Alien, Panel, Cannon…)</span>
 │   ├── style.css        <span class="c"># Estilos del modal y panel lateral</span>
@@ -443,6 +447,11 @@
       <p>Para actualizar tras cambios en el repositorio:</p>
       <pre><code><span class="kw">git pull</span>
 <span class="kw">docker compose down</span> &amp;&amp; <span class="kw">docker compose up</span> --build -d</code></pre>
+
+      <h3>Variable de entorno SECRET_KEY</h3>
+      <p>El fichero <code>docker-compose.yml</code> incluye la variable <code>SECRET_KEY</code> que Flask usa para firmar sesiones. Si despliegas en un entorno propio, genera un valor nuevo con:</p>
+      <pre><code><span class="kw">python3 -c</span> <span class="st">"import secrets; print(secrets.token_hex(32))"</span></code></pre>
+      <p>Y sustitúyelo en <code>docker-compose.yml</code> antes de construir la imagen.</p>
     </section>
 
     <!-- ── Manual ── -->
@@ -495,6 +504,46 @@
         </div>
       </div>
       <p style="margin-top:14px">Las salas se almacenan en memoria; al reiniciar el servidor se eliminan automáticamente.</p>
+    </section>
+
+    <!-- ── Seguridad ── -->
+    <section id="seguridad">
+      <h2>Seguridad</h2>
+      <div class="card">
+        <table>
+          <thead><tr><th>Medida</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>SECRET_KEY por entorno</td>
+              <td>La clave de sesión de Flask se inyecta como variable de entorno; no está en el código fuente ni en el repositorio.</td>
+            </tr>
+            <tr>
+              <td>Autorización server-side del podio</td>
+              <td>El servidor verifica que el socket que solicita mostrar el podio corresponde al creador de la sala. No basta con ocultar el botón en el cliente.</td>
+            </tr>
+            <tr>
+              <td>Rate limiting en creación de salas</td>
+              <td>Máximo de 50 salas simultáneas en el servidor y 5 salas nuevas por IP en un intervalo de 60 segundos.</td>
+            </tr>
+            <tr>
+              <td>Throttle de actualizaciones de puntuación</td>
+              <td>Se ignoran eventos <code>score_update</code> que lleguen con menos de 1 segundo de diferencia, evitando floods desde la consola del navegador.</td>
+            </tr>
+            <tr>
+              <td>CORS restringido</td>
+              <td>Las conexiones WebSocket solo se aceptan desde <code>https://hexagame.iesciudadjardin.es</code>.</td>
+            </tr>
+            <tr>
+              <td>Proceso sin privilegios</td>
+              <td>El contenedor Docker ejecuta Gunicorn como usuario <code>appuser</code> (sin privilegios de root), reduciendo la superficie de ataque en el host.</td>
+            </tr>
+            <tr>
+              <td>TLS en el perímetro</td>
+              <td>Nginx Proxy Manager termina HTTPS antes de redirigir el tráfico al contenedor. El tramo interno es HTTP plano sobre red local.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- ── Licencia ── -->
