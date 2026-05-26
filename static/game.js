@@ -579,7 +579,13 @@ class Game {
     // Clic canvas
     this.canvas.addEventListener('click', e => {
       const { mx, my } = this._canvasCoords(e);
-      if (this.state === 'about')        { this.state = 'start';        return; }
+      if (this.state === 'about') {
+        if (mx >= 280 && mx <= 620 && my >= 510 && my <= 534)
+          window.open('/docs', '_blank');
+        else
+          this.state = 'start';
+        return;
+      }
     if (this.state === 'start')       { this._clickStart(mx, my);   return; }
       if (this.state === 'select')      { this._clickSelect(mx, my);  return; }
       if (this.state === 'room_lobby')  { this._clickLobby(mx, my);   return; }
@@ -594,6 +600,10 @@ class Game {
     // Hover
     this.canvas.addEventListener('mousemove', e => {
       const { mx, my } = this._canvasCoords(e);
+      if (this.state === 'about') {
+        this.canvas.style.cursor = (mx >= 280 && mx <= 620 && my >= 510 && my <= 534) ? 'pointer' : 'default';
+        return;
+      }
       if (this.state === 'start') {
         const bw = 240, bh = 72, gap = 20;
         const totalW = 3 * bw + 2 * gap;
@@ -630,7 +640,8 @@ class Game {
 
     // Botón podio en panel lateral
     document.getElementById('btn-podium').addEventListener('click', () => {
-      this.room.showPodium();
+      if (confirm('⚠️ Mostrar el podio interrumpirá la partida de todos los jugadores de la sala. ¿Continuar?'))
+        this.room.showPodium();
     });
   }
 
@@ -821,6 +832,7 @@ class Game {
     for (const a of this.aliens) {
       if (a.alive && a.y > GROUND_Y - 10) {
         a.alive = false;
+        this.panelL.reset(); this.panelR.reset();
         this.audio.escape();
         const lb = a.nl.toString(2).padStart(4, '0');
         const rb = a.nr.toString(2).padStart(4, '0');
@@ -1271,9 +1283,12 @@ class Game {
     ctx.font = '12px monospace'; ctx.fillStyle = '#404060'; ctx.textAlign = 'center';
     ctx.fillText(`© 2025  ·  hexinvaders`, W / 2, ty + 100);
 
-    // Enlace docs
+    // Enlace docs (clicable)
+    const docsText = '📄 Documentación técnica → /docs';
     ctx.font = '13px monospace'; ctx.fillStyle = '#00c8ff'; ctx.textAlign = 'center';
-    ctx.fillText('github.com/joseliza/hexagame  ·  /docs', W / 2, 522);
+    ctx.fillText(docsText, W / 2, 522);
+    const docsW = ctx.measureText(docsText).width;
+    ctx.fillRect(W / 2 - docsW / 2, 524, docsW, 1);
 
     ctx.font = '13px monospace'; ctx.fillStyle = '#404060'; ctx.textAlign = 'center';
     ctx.fillText('ENTER / ESC — volver', W / 2, H - 12);
