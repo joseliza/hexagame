@@ -4,3 +4,5 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+    environment:
+      - SECRET_KEY=cdb37fdb70805faee820d538919888a4a77d61e4ac7ca665fc3be46d3f13c02e

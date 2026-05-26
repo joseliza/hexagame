@@ -3,14 +3,33 @@ eventlet.monkey_patch()
 
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
+import os
 import random
 import string
+import time
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hexinvaders-2026'
-socketio = SocketIO(app, cors_allowed_origins='*', async_mode='eventlet')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or os.urandom(32)
+socketio = SocketIO(app, cors_allowed_origins='https://hexagame.iesciudadjardin.es', async_mode='eventlet')
 
 rooms = {}  # code -> {players, state, creator}
+
+MAX_ROOMS        = 50   # salas simultáneas máximas
+_RATE_WINDOW     = 60   # segundos de ventana para rate limiting
+_RATE_MAX        = 5    # máximo de salas nuevas por IP en esa ventana
+_SCORE_INTERVAL  = 1.0  # segundos mínimos entre score_update por jugador
+_room_creation   = {}   # ip -> [timestamps]
+
+
+def _check_rate(ip):
+    """Devuelve True si la IP puede crear una sala más; actualiza el registro."""
+    now = time.time()
+    recent = [t for t in _room_creation.get(ip, []) if now - t < _RATE_WINDOW]
+    if len(recent) >= _RATE_MAX:
+        return False
+    recent.append(now)
+    _room_creation[ip] = recent
+    return True
 
 
 def _gen_code():
@@ -41,6 +60,13 @@ def docs():
 
 @socketio.on('create_room')
 def on_create_room(data):
+    if len(rooms) >= MAX_ROOMS:
+        emit('room_error', {'msg': 'Servidor lleno. Inténtalo más tarde.'})
+        return
+    ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', ''))
+    if not _check_rate(ip):
+        emit('room_error', {'msg': 'Demasiadas salas creadas. Espera un momento.'})
+        return
     nick = (data.get('nick') or 'Anónimo')[:12].strip()
     code = _gen_code()
     rooms[code] = {
@@ -89,6 +115,10 @@ def on_score_update(data):
     if code not in rooms or nick not in rooms[code]['players']:
         return
     p = rooms[code]['players'][nick]
+    now = time.time()
+    if now - p.get('last_update', 0) < _SCORE_INTERVAL:
+        return
+    p['last_update'] = now
     p['score'] = data.get('score', 0)
     p['lives'] = data.get('lives', 0)
     p['state'] = 'playing'
@@ -114,6 +144,9 @@ def on_show_podium(data):
     if code not in rooms:
         return
     room = rooms[code]
+    creator_sid = room['players'].get(room['creator'], {}).get('sid')
+    if request.sid != creator_sid:
+        return
     room['state'] = 'finished'
     sorted_p = _player_list(room)
     emit('podium_show', {'top': sorted_p[:3], 'all': sorted_p}, to=code)
